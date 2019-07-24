@@ -83,17 +83,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 	}
 
 	private function changePermission($list) {
-		$error = '';
 		foreach ($list as $item) {
 			try {
 				chmod($item, 0777);
 			} catch (\Throwable $e) {
-				$error .= 'chmod 777 ' . $item . " fail, Please do it manually \n";
+				$this->io->writeError('chmod 777 ' . $item . ' fail, Please do it manually');
 			}
-		}
-
-		if ($error) {
-			throw new \Exception($error);
 		}
 	}
 }
