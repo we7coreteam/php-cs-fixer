@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * WeEngine Api System
+ *
+ * (c) We7Team 2019 <https://www.w7.cc>
+ *
+ * This is not a free software
+ * Using it under the license terms
+ * visited https://www.w7.cc for more details
+ */
+
 namespace W7\PhpCsFixer\Plugin;
 
 use Composer\Composer;
@@ -42,7 +52,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 	public function installGitPreHook() {
 		$config = $this->composer->getConfig();
 		$filesystem = new Filesystem();
-		$hookDir = dirname($filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))))) . '/.git/hooks/';
+		$projectDir = dirname($filesystem->normalizePath(realpath(realpath($config->get('vendor-dir')))));
+		$hookDir = $projectDir . '/.git/hooks/';
 		if (!file_exists($hookDir)) {
 			throw new \Exception('not a git project');
 		}
@@ -53,10 +64,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 		$filesystem->copy(dirname(__DIR__) . '/Helper/pre-commit-cs-fix', $hookDir . 'pre-commit-cs-fix');
 		$list[] = $hookDir . 'pre-commit-cs-fix';
 
+		if (!file_exists($projectDir . '/.php_cs')) {
+			$filesystem->copy(dirname(__DIR__) . '/Helper/.php_cs', $projectDir . '/.php_cs');
+		}
 		if (file_exists($hookDir . 'pre-commit')) {
-			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . "pre-commit-cs-fix", FILE_APPEND);
+			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . 'pre-commit-cs-fix', FILE_APPEND);
 		} else {
-			file_put_contents($hookDir . 'pre-commit', "#!/bin/bash \n exec " . $hookDir . "pre-commit-cs-fix");
+			file_put_contents($hookDir . 'pre-commit', "#!/bin/bash \n exec " . $hookDir . 'pre-commit-cs-fix');
 			$list[] = $hookDir . 'pre-commit';
 		}
 		$this->changePermission($list);
@@ -71,7 +85,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 	private function changePermission($list) {
 		$error = '';
 		foreach ($list as $item) {
-			try{
+			try {
 				chmod($item, 0777);
 			} catch (\Throwable $e) {
 				$error .= 'chmod 777 ' . $item . " fail, Please do it manually \n";
