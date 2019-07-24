@@ -1,0 +1,85 @@
+<?php
+
+namespace W7\PhpCsFixer\Plugin;
+
+use Composer\Composer;
+use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
+use Composer\Plugin\PluginInterface;
+use Composer\EventDispatcher\EventSubscriberInterface;
+
+class Plugin implements PluginInterface, EventSubscriberInterface {
+	/**
+	 * @var \Composer\Composer
+	 */
+	protected $composer;
+
+	/**
+	 * @var \Composer\IO\IOInterface
+	 */
+	protected $io;
+
+	/**
+	 * Apply plugin modifications to Composer
+	 *
+	 * @param Composer    $composer
+	 * @param IOInterface $io
+	 */
+	public function activate(Composer $composer, IOInterface $io) {
+		$this->composer = $composer;
+		$this->io = $io;
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function getSubscribedEvents() {
+		return array(
+			'post-autoload-dump' => 'installGitPreHook',
+		);
+	}
+
+	public function installGitPreHook() {
+		$config = $this->composer->getConfig();
+		$filesystem = new Filesystem();
+		$hookDir = dirname($filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))))) . '/.git/hooks/';
+		if (!file_exists($hookDir)) {
+			throw new \Exception('not a git project');
+		}
+		if (file_exists($hookDir . 'pre-commit-cs-fix')) {
+			return true;
+		}
+
+		$filesystem->copy(dirname(__DIR__) . '/Helper/pre-commit-cs-fix', $hookDir . 'pre-commit-cs-fix');
+		$list[] = $hookDir . 'pre-commit-cs-fix';
+
+		if (file_exists($hookDir . 'pre-commit')) {
+			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . "pre-commit-cs-fix", FILE_APPEND);
+		} else {
+			file_put_contents($hookDir . 'pre-commit', "#!/bin/bash \n exec " . $hookDir . "pre-commit-cs-fix");
+			$list[] = $hookDir . 'pre-commit';
+		}
+		$this->changePermission($list);
+	}
+
+	public static function install(\Composer\Script\Event $event) {
+		$plugin = new static();
+		$plugin->activate($event->getComposer(), $event->getIO());
+		$plugin->installGitPreHook();
+	}
+
+	private function changePermission($list) {
+		$error = '';
+		foreach ($list as $item) {
+			try{
+				chmod($item, 0777);
+			} catch (\Throwable $e) {
+				$error .= 'chmod 777 ' . $item . " fail, Please do it manually \n";
+			}
+		}
+
+		if ($error) {
+			throw new \Exception($error);
+		}
+	}
+}

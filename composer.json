@@ -1,0 +1,26 @@
+{
+	"name": "w7/php-cs-fixer",
+	"license": "Apache-2.0",
+	"description": "php-cs-fixer plugin",
+	"type": "composer-plugin",
+	"require": {
+		"composer-plugin-api": "^1.0",
+		"friendsofphp/php-cs-fixer": "^2.15"
+	},
+	"require-dev": {
+		"composer/composer": "~1.0"
+	},
+	"autoload": {
+		"psr-4" : {
+			"W7\\PhpCsFixer\\": "src/"
+		}
+	},
+	"extra": {
+		"class": "W7\\PhpCsFixer\\Plugin\\Plugin"
+	},
+	"scripts": {
+		"post-autoload-dump": [
+			"W7\\PhpCsFixer\\Plugin\\Plugin::install"
+		]
+	}
+}
