@@ -57,6 +57,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 		if (!file_exists($hookDir)) {
 			throw new \Exception('not a git project');
 		}
+
+		if (!file_exists($projectDir . '/.php_cs')) {
+			$filesystem->copy(dirname(__DIR__) . '/Helper/.php_cs', $projectDir . '/.php_cs');
+		}
 		if (file_exists($hookDir . 'pre-commit-cs-fix')) {
 			return true;
 		}
@@ -64,9 +68,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 		$filesystem->copy(dirname(__DIR__) . '/Helper/pre-commit-cs-fix', $hookDir . 'pre-commit-cs-fix');
 		$list[] = $hookDir . 'pre-commit-cs-fix';
 
-		if (!file_exists($projectDir . '/.php_cs')) {
-			$filesystem->copy(dirname(__DIR__) . '/Helper/.php_cs', $projectDir . '/.php_cs');
-		}
 		if (file_exists($hookDir . 'pre-commit')) {
 			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . 'pre-commit-cs-fix', FILE_APPEND);
 		} else {
