@@ -4,7 +4,7 @@
 	"description": "php-cs-fixer plugin",
 	"type": "composer-plugin",
 	"require": {
-		"composer-plugin-api": "^2.0",
+		"composer-plugin-api": "*",
 		"friendsofphp/php-cs-fixer": "^2.15"
 	},
 	"require-dev": {
