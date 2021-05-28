@@ -64,20 +64,21 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 			throw new \Exception('not a git project');
 		}
 
-		if (!file_exists($projectDir . '/.php_cs')) {
-			$filesystem->copy(dirname(__DIR__) . '/Helper/.php_cs', $projectDir . '/.php_cs');
+		$fixFileName = 'pre-commit-cs-fix-30';
+		if (!file_exists($projectDir . '/.php-cs-fixer.php')) {
+			$filesystem->copy(dirname(__DIR__) . '/Helper/.php-cs-fixer.php', $projectDir . '/.php-cs-fixer.php');
 		}
-		if (file_exists($hookDir . 'pre-commit-cs-fix')) {
+		if (file_exists($hookDir . $fixFileName)) {
 			return true;
 		}
 
-		$filesystem->copy(dirname(__DIR__) . '/Helper/pre-commit-cs-fix', $hookDir . 'pre-commit-cs-fix');
-		$list[] = $hookDir . 'pre-commit-cs-fix';
+		$filesystem->copy(dirname(__DIR__) . '/Helper/pre-commit-cs-fix', $hookDir . $fixFileName);
+		$list[] = $hookDir . $fixFileName;
 
 		if (file_exists($hookDir . 'pre-commit')) {
-			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . 'pre-commit-cs-fix', FILE_APPEND);
+			file_put_contents($hookDir . 'pre-commit', "\n exec " . $hookDir . $fixFileName, FILE_APPEND);
 		} else {
-			file_put_contents($hookDir . 'pre-commit', "#!/bin/bash \n exec " . $hookDir . 'pre-commit-cs-fix');
+			file_put_contents($hookDir . 'pre-commit', "#!/bin/bash \n exec " . $hookDir . $fixFileName);
 			$list[] = $hookDir . 'pre-commit';
 		}
 		$this->changePermission($list);
