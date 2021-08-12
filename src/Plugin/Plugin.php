@@ -59,15 +59,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 		$config = $this->composer->getConfig();
 		$filesystem = new Filesystem();
 		$projectDir = dirname($filesystem->normalizePath(realpath(realpath($config->get('vendor-dir')))));
-		$hookDir = $projectDir . '/.git/hooks/';
-		if (!file_exists($hookDir)) {
-			throw new \Exception('not a git project');
-		}
-
-		$fixFileName = 'pre-commit-cs-fix-30';
 		if (!file_exists($projectDir . '/.php-cs-fixer.php')) {
 			$filesystem->copy(dirname(__DIR__) . '/Helper/.php-cs-fixer.php', $projectDir . '/.php-cs-fixer.php');
 		}
+
+		$hookDir = $projectDir . '/.git/hooks/';
+		if (!file_exists($hookDir)) {
+			return true;
+		}
+
+		$fixFileName = 'pre-commit-cs-fix-30';
 		if (file_exists($hookDir . $fixFileName)) {
 			return true;
 		}
