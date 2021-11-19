@@ -17,10 +17,5 @@
 	},
 	"extra": {
 		"class": "W7\\PhpCsFixer\\Plugin\\Plugin"
-	},
-	"scripts": {
-		"post-autoload-dump": [
-			"W7\\PhpCsFixer\\Plugin\\Plugin::install"
-		]
 	}
 }
