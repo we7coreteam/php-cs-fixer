@@ -14,6 +14,7 @@ namespace W7\PhpCsFixer\Plugin;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Composer\Script\Event;
 use Composer\Util\Filesystem;
 use Composer\Plugin\PluginInterface;
 use Composer\EventDispatcher\EventSubscriberInterface;
@@ -51,7 +52,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 	 */
 	public static function getSubscribedEvents() {
 		return array(
-			'post-autoload-dump' => 'installGitPreHook',
+			'post-autoload-dump' => 'install',
 		);
 	}
 
@@ -85,7 +86,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
 		$this->changePermission($list);
 	}
 
-	public static function install(\Composer\Script\Event $event) {
+	public static function install(Event $event) {
 		$plugin = new static();
 		$plugin->activate($event->getComposer(), $event->getIO());
 		$plugin->installGitPreHook();
